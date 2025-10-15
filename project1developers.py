@@ -6,26 +6,6 @@ from itertools import combinations
 from Levenshtein import ratio as sim
 import os
 
-# This block of code take the repository, fetches all the commits,
-# retrieves name and email of both the author and commiter and saves the unique
-# pairs to csv
-# If you provide a URL, it clones the repo, fetches the commits and then deletes it,
-# so for a big project better clone the repo locally and provide filesystem path
-
-# from pydriller import Repository
-# DEVS = set()
-# for commit in Repository("https://github.com/dotnet-architecture/eShopOnContainers").traverse_commits():
-#     DEVS.add((commit.author.name, commit.author.email))
-#     DEVS.add((commit.committer.name, commit.committer.email))
-#
-# DEVS = sorted(DEVS)
-#
-# with open(os.path.join("project1devs", "devs.csv"), 'w', newline='') as csvfile:
-#     writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-#     writer.writerow(["name", "email"])
-#     writer.writerows(DEVS)
-#
-
 # This block of code reads an existing csv of developers
 
 DEVS = []
