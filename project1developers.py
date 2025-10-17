@@ -50,59 +50,60 @@ def process(dev):
 
 if __name__ == "__main__":
     
+    
     csv_file_path = os.path.join("project1devs", TEAM_MEMBER.lower().strip())
-
-    devs_file_path = os.path.join(csv_file_path, 'devs.csv')
-    if not os.path.isfile(devs_file_path):
-        print(f"No csv file found at {devs_file_path}! First use fetch_devs.py to generate it.")
-        sys.exit()
-    
-    DEVS = []
-    # Read csv file with name,dev columns
-    with open(devs_file_path, 'r', newline='', encoding='utf-8') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',')
-        for row in reader:
-            DEVS.append(row)
-    # First element is header, skip
-    DEVS = DEVS[1:]
-    
-    # Compute similarity between all possible pairs (stream to disk to avoid O(n^2) memory)
     raw_path = os.path.join(csv_file_path, "devs_similarity_raw.csv")
-    cols = ["name_1", "email_1", "name_2", "email_2", "c1", "c2",
-            "c3.1", "c3.2", "c4", "c5", "c6", "c7"]
 
-    # Total combinations for tqdm
-    total_combinations = len(DEVS) * (len(DEVS) - 1) // 2
+    if not os.path.isfile(raw_path):
+        devs_file_path = os.path.join(csv_file_path, 'devs.csv')
+        if not os.path.isfile(devs_file_path):
+            print(f"No csv file found at {devs_file_path}! First use fetch_devs.py to generate it.")
+            sys.exit()
+        
+        DEVS = []
+        # Read csv file with name,dev columns
+        with open(devs_file_path, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            for row in reader:
+                DEVS.append(row)
+        # First element is header, skip
+        DEVS = DEVS[1:]
+        
+        cols = ["name_1", "email_1", "name_2", "email_2", "c1", "c2",
+                "c3.1", "c3.2", "c4", "c5", "c6", "c7"]
 
-    # Write raw similarity rows as we compute them
-    with open(raw_path, "w", newline="", encoding="utf-8") as rawf:
-        writer = csv.writer(rawf)
-        writer.writerow(cols)
-        combos = combinations(DEVS, 2)
-        for dev_a, dev_b in tqdm(combos, total=total_combinations, desc="Processing dev combinations"):
-            # Pre-process both developers
-            name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = process(dev_a)
-            name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = process(dev_b)
-            # Conditions of Bird heuristic
-            c1 = sim(name_a, name_b)
-            c2 = sim(prefix_b, prefix_a)
-            c31 = sim(first_a, first_b)
-            c32 = sim(last_a, last_b)
-            c4 = c5 = c6 = c7 = False
-            # Since lastname and initials can be empty, perform appropriate checks
-            if i_first_a != "" and last_a != "":
-                c4 = i_first_a in prefix_b and last_a in prefix_b
-            if i_last_a != "":
-                c5 = i_last_a in prefix_b and first_a in prefix_b
-            if i_first_b != "" and last_b != "":
-                c6 = i_first_b in prefix_a and last_b in prefix_a
-            if i_last_b != "":
-                c7 = i_last_b in prefix_a and first_b in prefix_a
+        # Total combinations for tqdm
+        total_combinations = len(DEVS) * (len(DEVS) - 1) // 2
 
-            writer.writerow([dev_a[0], email_a, dev_b[0], email_b, c1, c2, c31, c32, c4, c5, c6, c7])
+        # Stream the similarities to a csv file to avoid running out of memory with a big dataset
+        with open(raw_path, "w", newline="", encoding="utf-8") as rawf:
+            writer = csv.writer(rawf)
+            writer.writerow(cols)
+            combos = combinations(DEVS, 2)
+            for dev_a, dev_b in tqdm(combos, total=total_combinations, desc="Processing dev combinations"):
+                # Pre-process both developers
+                name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = process(dev_a)
+                name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = process(dev_b)
+                # Conditions of Bird heuristic
+                c1 = sim(name_a, name_b)
+                c2 = sim(prefix_b, prefix_a)
+                c31 = sim(first_a, first_b)
+                c32 = sim(last_a, last_b)
+                c4 = c5 = c6 = c7 = False
+                # Since lastname and initials can be empty, perform appropriate checks
+                if i_first_a != "" and last_a != "":
+                    c4 = i_first_a in prefix_b and last_a in prefix_b
+                if i_last_a != "":
+                    c5 = i_last_a in prefix_b and first_a in prefix_b
+                if i_first_b != "" and last_b != "":
+                    c6 = i_first_b in prefix_a and last_b in prefix_a
+                if i_last_b != "":
+                    c7 = i_last_b in prefix_a and first_b in prefix_a
 
-    df = pd.read_csv(raw_path)
-    # df.to_csv(os.path.join("project1devs", "devs_similarity.csv"), index=False, header=True)
+                writer.writerow([dev_a[0], email_a, dev_b[0], email_b, c1, c2, c31, c32, c4, c5, c6, c7])
+
+    # Read dataframe from csv
+    df = pd.read_csv(raw_path, low_memory=False)
 
     # Set similarity threshold, check c1-c3 against the threshold
     t=0.7
