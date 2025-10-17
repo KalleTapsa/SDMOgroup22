@@ -25,8 +25,11 @@ if LIMIT:
 
 display_total = min(totalcommits, LIMIT) if LIMIT else totalcommits
 for commit in tqdm(commits_iter, total=display_total, desc="Processing commits"):
-    DEVS.add((commit.author.name, commit.author.email))
-    DEVS.add((commit.committer.name, commit.committer.email))
+    # Check that both the author and committer have emails and names
+    if commit.author.name and commit.author.email:
+        DEVS.add((commit.author.name, commit.author.email))
+    if commit.committer.name and commit.committer.email:
+        DEVS.add((commit.committer.name, commit.committer.email))
 
 DEVS = sorted(DEVS)
 

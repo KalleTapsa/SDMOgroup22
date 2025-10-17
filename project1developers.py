@@ -49,8 +49,6 @@ def process(dev):
     return name, first, last, i_first, i_last, email, prefix
 
 if __name__ == "__main__":
-    
-    
     csv_file_path = os.path.join("project1devs", TEAM_MEMBER.lower().strip())
     raw_path = os.path.join(csv_file_path, "devs_similarity_raw.csv")
 
