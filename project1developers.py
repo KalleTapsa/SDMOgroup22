@@ -5,17 +5,9 @@ import string
 from itertools import combinations
 from Levenshtein import ratio as sim
 import os
-
-# This block of code reads an existing csv of developers
-
-DEVS = []
-# Read csv file with name,dev columns
-with open(os.path.join("project1devs", "devs.csv"), 'r', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    for row in reader:
-        DEVS.append(row)
-# First element is header, skip
-DEVS = DEVS[1:]
+import sys
+from tqdm import tqdm
+from config import *
 
 
 # Function for pre-processing each name,email
@@ -56,52 +48,72 @@ def process(dev):
 
     return name, first, last, i_first, i_last, email, prefix
 
+if __name__ == "__main__":
+    
+    csv_file_path = os.path.join("project1devs", TEAM_MEMBER.lower().strip())
 
-# Compute similarity between all possible pairs
-SIMILARITY = []
-for dev_a, dev_b in combinations(DEVS, 2):
-    # Pre-process both developers
-    name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = process(dev_a)
-    name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = process(dev_b)
+    devs_file_path = os.path.join(csv_file_path, 'devs.csv')
+    if not os.path.isfile(devs_file_path):
+        print(f"No csv file found at {devs_file_path}! First use fetch_devs.py to generate it.")
+        sys.exit()
+    
+    DEVS = []
+    # Read csv file with name,dev columns
+    with open(devs_file_path, 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            DEVS.append(row)
+    # First element is header, skip
+    DEVS = DEVS[1:]
+    
+    # Compute similarity between all possible pairs (stream to disk to avoid O(n^2) memory)
+    raw_path = os.path.join(csv_file_path, "devs_similarity_raw.csv")
+    cols = ["name_1", "email_1", "name_2", "email_2", "c1", "c2",
+            "c3.1", "c3.2", "c4", "c5", "c6", "c7"]
 
-    # Conditions of Bird heuristic
-    c1 = sim(name_a, name_b)
-    c2 = sim(prefix_b, prefix_a)
-    c31 = sim(first_a, first_b)
-    c32 = sim(last_a, last_b)
-    c4 = c5 = c6 = c7 = False
-    # Since lastname and initials can be empty, perform appropriate checks
-    if i_first_a != "" and last_a != "":
-        c4 = i_first_a in prefix_b and last_a in prefix_b
-    if i_last_a != "":
-        c5 = i_last_a in prefix_b and first_a in prefix_b
-    if i_first_b != "" and last_b != "":
-        c6 = i_first_b in prefix_a and last_b in prefix_a
-    if i_last_b != "":
-        c7 = i_last_b in prefix_a and first_b in prefix_a
+    # Total combinations for tqdm
+    total_combinations = len(DEVS) * (len(DEVS) - 1) // 2
 
-    # Save similarity data for each conditions. Original names are saved
-    SIMILARITY.append([dev_a[0], email_a, dev_b[0], email_b, c1, c2, c31, c32, c4, c5, c6, c7])
+    # Write raw similarity rows as we compute them
+    with open(raw_path, "w", newline="", encoding="utf-8") as rawf:
+        writer = csv.writer(rawf)
+        writer.writerow(cols)
+        combos = combinations(DEVS, 2)
+        for dev_a, dev_b in tqdm(combos, total=total_combinations, desc="Processing dev combinations"):
+            # Pre-process both developers
+            name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = process(dev_a)
+            name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = process(dev_b)
+            # Conditions of Bird heuristic
+            c1 = sim(name_a, name_b)
+            c2 = sim(prefix_b, prefix_a)
+            c31 = sim(first_a, first_b)
+            c32 = sim(last_a, last_b)
+            c4 = c5 = c6 = c7 = False
+            # Since lastname and initials can be empty, perform appropriate checks
+            if i_first_a != "" and last_a != "":
+                c4 = i_first_a in prefix_b and last_a in prefix_b
+            if i_last_a != "":
+                c5 = i_last_a in prefix_b and first_a in prefix_b
+            if i_first_b != "" and last_b != "":
+                c6 = i_first_b in prefix_a and last_b in prefix_a
+            if i_last_b != "":
+                c7 = i_last_b in prefix_a and first_b in prefix_a
 
+            writer.writerow([dev_a[0], email_a, dev_b[0], email_b, c1, c2, c31, c32, c4, c5, c6, c7])
 
+    df = pd.read_csv(raw_path)
+    # df.to_csv(os.path.join("project1devs", "devs_similarity.csv"), index=False, header=True)
 
-# Save data on all pairs (might be too big -> comment out to avoid)
-cols = ["name_1", "email_1", "name_2", "email_2", "c1", "c2",
-        "c3.1", "c3.2", "c4", "c5", "c6", "c7"]
-df = pd.DataFrame(SIMILARITY, columns=cols)
-df.to_csv(os.path.join("project1devs", "devs_similarity.csv"), index=False, header=True)
+    # Set similarity threshold, check c1-c3 against the threshold
+    t=0.7
+    print("Threshold:", t)
+    df["c1_check"] = df["c1"] >= t
+    df["c2_check"] = df["c2"] >= t
+    df["c3_check"] = (df["c3.1"] >= t) & (df["c3.2"] >= t)
+    # Keep only rows where at least one condition is True
+    df = df[df[["c1_check", "c2_check", "c3_check", "c4", "c5", "c6", "c7"]].any(axis=1)]
 
-
-# Set similarity threshold, check c1-c3 against the threshold
-t=0.7
-print("Threshold:", t)
-df["c1_check"] = df["c1"] >= t
-df["c2_check"] = df["c2"] >= t
-df["c3_check"] = (df["c3.1"] >= t) & (df["c3.2"] >= t)
-# Keep only rows where at least one condition is True
-df = df[df[["c1_check", "c2_check", "c3_check", "c4", "c5", "c6", "c7"]].any(axis=1)]
-
-# Omit "check" columns, save to csv
-df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2",
-        "c3.1", "c3.2", "c4", "c5", "c6", "c7"]]
-df.to_csv(os.path.join("project1devs", f"devs_similarity_t={t}.csv"), index=False, header=True)
+    # Omit "check" columns, save to csv
+    df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2",
+            "c3.1", "c3.2", "c4", "c5", "c6", "c7"]]
+    df.to_csv(os.path.join(csv_file_path, f"devs_similarity_t={t}.csv"), index=False, header=True)
