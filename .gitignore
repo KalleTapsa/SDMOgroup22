@@ -2,3 +2,5 @@ venv/
 project1devs/*
 !project1devs/examples/
 **/__pycache__/
+.sonar/.sonar_lock
+.sonar/report-task.txt
