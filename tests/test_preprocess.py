@@ -1,4 +1,3 @@
-import pytest
 from preprocess import preprocess
 
 
