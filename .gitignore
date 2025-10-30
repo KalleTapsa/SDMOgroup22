@@ -4,3 +4,4 @@ project1devs/*
 **/__pycache__/
 .sonar/.sonar_lock
 .sonar/report-task.txt
+sonar-project.properties
