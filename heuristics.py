@@ -28,9 +28,12 @@ def calculate_similarity_improved(dev_a, dev_b):
     name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = dev_a
     name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = dev_b
 
+    email_postfix_a = email_a.split("@")[1] if "@" in email_a else email_a
+    email_postfix_b = email_b.split("@")[1] if "@" in email_b else email_b
+
     # Conditions of edited heuristic
     c1 = sim(name_a, name_b)
-    c2 = sim(prefix_a, prefix_b) * sim(email_a.split("@")[1], email_b.split("@")[1])
+    c2 = sim(prefix_a, prefix_b) * sim(email_postfix_a, email_postfix_b)
     c31 = sim(first_a, first_b)
     c32 = sim(last_a, last_b)
 
