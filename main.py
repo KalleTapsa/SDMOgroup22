@@ -32,7 +32,7 @@ if __name__ == "__main__":
     threshold = args.threshold
 
     csv_file_path = os.path.join("project1devs", config.TEAM_MEMBER.lower().strip())
-    raw_path = os.path.join(csv_file_path, "devs_similarity_raw.csv")
+    raw_path = os.path.join(csv_file_path, f"devs_similarity_raw_{heuristic}.csv")
 
     if not os.path.isfile(raw_path):
         devs_file_path = os.path.join(csv_file_path, "devs.csv")
@@ -182,13 +182,6 @@ if __name__ == "__main__":
                 "c7",
             ]
         ]
-        # Added a print to see how many duplicates are found
-        print(f"{len(df)} duplicates found")
-        df.to_csv(
-            os.path.join(csv_file_path, f"devs_similarity_t={threshold}.csv"),
-            index=False,
-            header=True,
-        )
     elif heuristic == "improved":
         df["c_sum"] = (
             (df["c1"] >= threshold).astype(int)
@@ -199,10 +192,11 @@ if __name__ == "__main__":
         df = df[df["c_sum"] >= 2]
         # Omit "check" columns, save to csv
         df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2", "c3.1", "c3.2"]]
-        # Added a print to see how many duplicates are found
-        print(f"{len(df)} duplicates found")
-        df.to_csv(
-            os.path.join(csv_file_path, f"devs_similarity_t={threshold}.csv"),
-            index=False,
-            header=True,
-        )
+        
+    # Added a print to see how many duplicates are found
+    print(f"{len(df)} duplicates found")
+    df.to_csv(
+        os.path.join(csv_file_path, f"devs_similarity_t={threshold}_heuristic={heuristic}.csv"),
+        index=False,
+        header=True,
+    )
