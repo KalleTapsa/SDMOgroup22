@@ -1,9 +1,8 @@
 import csv
 import os
 import sys
-from turtle import pd
 from tqdm import tqdm
-from config import *
+import config
 from itertools import combinations
 from heuristics import calculate_similarity_bird, calculate_similarity_improved
 from preprocess import preprocess
@@ -32,7 +31,7 @@ if __name__ == "__main__":
     heuristic = args.heuristic
     threshold = args.threshold
 
-    csv_file_path = os.path.join("project1devs", TEAM_MEMBER.lower().strip())
+    csv_file_path = os.path.join("project1devs", config.TEAM_MEMBER.lower().strip())
     raw_path = os.path.join(csv_file_path, "devs_similarity_raw.csv")
 
     if not os.path.isfile(raw_path):

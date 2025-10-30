@@ -3,7 +3,7 @@ import os
 from pydriller import Repository
 from tqdm import tqdm
 import git
-from config import *
+import config
 import itertools
 import argparse
 
@@ -22,15 +22,15 @@ if __name__ == "__main__":
         LIMIT = args.limit
     
     # Count commits for cool progress bar
-    if os.path.isdir(REPO_PATH):
-        repo = git.Repo(REPO_PATH)
+    if os.path.isdir(config.REPO_PATH):
+        repo = git.Repo(config.REPO_PATH)
         totalcommits = int(repo.git.rev_list("--count", "HEAD"))
         display_total = min(totalcommits, LIMIT) if LIMIT else totalcommits
     else:
         display_total = None
 
     DEVS = set()
-    commits_iter = Repository(REPO_PATH).traverse_commits()
+    commits_iter = Repository(config.REPO_PATH).traverse_commits()
     if LIMIT:
         commits_iter = itertools.islice(commits_iter, LIMIT)
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     DEVS = sorted(DEVS)
 
-    file_path = f"project1devs/{TEAM_MEMBER.lower().strip()}/devs.csv"
+    file_path = f"project1devs/{config.TEAM_MEMBER.lower().strip()}/devs.csv"
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, delimiter=",", quotechar='"')
