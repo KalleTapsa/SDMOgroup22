@@ -1,2 +1,2 @@
-REPO_PATH = "../linux"  # Put repo path (or url) here
-TEAM_MEMBER = "Jesper"  # Put your name here
+REPO_PATH = "path"  # Put repo path (or url) here
+TEAM_MEMBER = "name"  # Put your name here
