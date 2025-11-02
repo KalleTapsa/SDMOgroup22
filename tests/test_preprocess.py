@@ -1,4 +1,4 @@
-from preprocess import preprocess
+from utils import preprocess
 
 
 def test_simple_name_and_email():

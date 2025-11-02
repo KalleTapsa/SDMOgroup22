@@ -1,2 +1,2 @@
-REPO_PATH = "https://github.com/LibreOffice/core"  # Put repo path (or url) here
-TEAM_MEMBER = "JussiS" # Put your name here
+REPO_PATH = "../linux"  # Put repo path (or url) here
+TEAM_MEMBER = "Jesper"  # Put your name here

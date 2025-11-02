@@ -1,6 +1,7 @@
 import string
 import unicodedata
 from rapidfuzz import fuzz
+import numpy as np
 
 def normalize_email(email):
     """Normalize email by extracting prefix and domain.
@@ -112,10 +113,34 @@ def preprocess(dev):
 
 
 def is_potential_duplicate(dev_a, dev_b):
-    name_a, _, _, _, _, email_a, _ = dev_a
-    name_b, _, _, _, _, email_b, _ = dev_b
+    """Simple heuristic to determine if two developers are potential duplicates based on name and email similarity.
+    Args:
+        dev_a (tuple): name, email
+        dev_b (tuple): name, email
+    Returns:
+        bool: True if potential duplicates, False otherwise
+    """
+    name_a, _, _, _, _, email_a, prefix_a = preprocess(dev_a)
+    name_b, _, _, _, _, email_b, prefix_b = preprocess(dev_b)
     
     name_similarity = fuzz.token_sort_ratio(name_a, name_b) / 100.0
-    email_similarity = fuzz.ratio(email_a, email_b) / 100.0
+    email_similarity = fuzz.token_sort_ratio(prefix_a, prefix_b) / 100.0
     
-    return name_similarity >= 0.6 or email_similarity >= 0.6
+    return name_similarity >= 0.7 or email_similarity >= 0.7
+
+
+def biased_sample(pairs, n_samples):
+    """Sample developer pairs with bias towards potential duplicates.
+    Args:
+        pairs (list): List of tuples containing developer pairs
+        n_samples (int): Number of samples to take
+    Returns:
+        list: Sampled developer pairs
+    """
+    sims = np.array([is_potential_duplicate(dev1, dev2) for dev1, dev2 in pairs])
+    probs = sims + 0.001  # Add small number so low sims still have a chance
+    probs /= probs.sum()  # Normalize to sum to 1 for np.random.choice
+
+    # Randomly sample indices with the probabilities
+    chosen_idx = np.random.choice(len(pairs), size=n_samples, replace=False, p=probs)
+    return [pairs[i] for i in chosen_idx]
