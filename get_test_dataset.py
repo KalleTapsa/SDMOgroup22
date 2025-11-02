@@ -4,8 +4,25 @@ import sys
 from tqdm import tqdm
 import config
 from itertools import combinations
-from utils import biased_sample
+from utils import is_potential_duplicate
 import argparse
+import numpy as np
+
+def biased_sample(pairs, n_samples):
+    """Sample developer pairs with bias towards potential duplicates.
+    Args:
+        pairs (list): List of tuples containing developer pairs
+        n_samples (int): Number of samples to take
+    Returns:
+        list: Sampled developer pairs
+    """
+    sims = np.array([is_potential_duplicate(dev1, dev2) for dev1, dev2 in pairs])
+    probs = sims + 0.001  # Add small number so low sims still have a chance
+    probs /= probs.sum()  # Normalize to sum to 1 for np.random.choice
+
+    # Randomly sample indices with the probabilities
+    chosen_idx = np.random.choice(len(pairs), size=n_samples, replace=False, p=probs)
+    return [pairs[i] for i in chosen_idx]
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(

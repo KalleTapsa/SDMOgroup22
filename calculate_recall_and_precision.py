@@ -69,11 +69,13 @@ def evaluate(validation_csv, threshold=0.7):
         bird_pred = score_bird(dev_a, dev_b, threshold)
         improved_pred = score_improved(dev_a, dev_b, threshold)
         
-        if improved_pred == 0 and y_true[i] == 1:
+        true_label = int(row["is_duplicate"])
+
+        if improved_pred != true_label or bird_pred != true_label:
             print(f"Disagreement on row {i}:")
             print(f"  Dev A: {name_a}, {email_a}")
             print(f"  Dev B: {name_b}, {email_b}")
-            print(f"  True label: {y_true[i]}")
+            print(f"  True label: {true_label}")
             print(f"  Bird prediction: {bird_pred}")
             print(f"  Improved prediction: {improved_pred}")
 

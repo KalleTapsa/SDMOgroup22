@@ -1,5 +1,5 @@
 import pytest
-from utils import normalize_email, name_similarity, email_similarity, prefix_match, preprocess, is_potential_duplicate, biased_sample
+from utils import normalize_email, name_similarity, email_similarity, prefix_match, preprocess, is_potential_duplicate
 
 
 def test_normalize_email():

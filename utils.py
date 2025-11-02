@@ -127,20 +127,3 @@ def is_potential_duplicate(dev_a, dev_b):
     email_similarity = fuzz.token_sort_ratio(prefix_a, prefix_b) / 100.0
     
     return name_similarity >= 0.7 or email_similarity >= 0.7
-
-
-def biased_sample(pairs, n_samples):
-    """Sample developer pairs with bias towards potential duplicates.
-    Args:
-        pairs (list): List of tuples containing developer pairs
-        n_samples (int): Number of samples to take
-    Returns:
-        list: Sampled developer pairs
-    """
-    sims = np.array([is_potential_duplicate(dev1, dev2) for dev1, dev2 in pairs])
-    probs = sims + 0.001  # Add small number so low sims still have a chance
-    probs /= probs.sum()  # Normalize to sum to 1 for np.random.choice
-
-    # Randomly sample indices with the probabilities
-    chosen_idx = np.random.choice(len(pairs), size=n_samples, replace=False, p=probs)
-    return [pairs[i] for i in chosen_idx]
