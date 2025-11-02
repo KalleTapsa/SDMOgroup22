@@ -35,15 +35,15 @@ def score_improved(dev_a, dev_b, threshold):
     Returns:
         bool: True if duplicate, False otherwise
     """
-    c1, c2, c3, c4, c5, c6, c7, c8 = calculate_similarity_improved(dev_a, dev_b)
+    c11, c12, c2, c3, c4, c5, c6, c7 = calculate_similarity_improved(dev_a, dev_b)
     return (
-        ((c1 >= threshold) and (c2 >= threshold))
+        ((c11 >= threshold) and (c12 >= threshold))
+        or (c2 >= threshold)
         or (c3 >= threshold)
         or (c4 >= threshold)
         or (c5 >= threshold)
         or (c6 >= threshold)
         or (c7 >= threshold)
-        or (c8 >= threshold)
     )
 
 
@@ -59,7 +59,7 @@ def evaluate(validation_csv, threshold=0.7):
     improved_preds = []
     y_true = df["is_duplicate"].astype(int)
 
-    for _, row in df.iterrows():
+    for i, row in df.iterrows():
         name_a, email_a = row["name_1"], row["email_1"]
         name_b, email_b = row["name_2"], row["email_2"]
 
@@ -68,6 +68,14 @@ def evaluate(validation_csv, threshold=0.7):
 
         bird_pred = score_bird(dev_a, dev_b, threshold)
         improved_pred = score_improved(dev_a, dev_b, threshold)
+        
+        if improved_pred == 0 and y_true[i] == 1:
+            print(f"Disagreement on row {i}:")
+            print(f"  Dev A: {name_a}, {email_a}")
+            print(f"  Dev B: {name_b}, {email_b}")
+            print(f"  True label: {y_true[i]}")
+            print(f"  Bird prediction: {bird_pred}")
+            print(f"  Improved prediction: {improved_pred}")
 
         bird_preds.append(bird_pred)
         improved_preds.append(improved_pred)

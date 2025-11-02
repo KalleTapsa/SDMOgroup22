@@ -73,14 +73,14 @@ if __name__ == "__main__":
                 "email_1",
                 "name_2",
                 "email_2",
-                "c1",
+                "c11",
+                "c12",
                 "c2",
                 "c3",
                 "c4",
                 "c5",
                 "c6",
                 "c7",
-                "c8",
             ]
 
         # Total combinations for tqdm
@@ -143,7 +143,7 @@ if __name__ == "__main__":
                     )
                 elif heuristic == "improved":
                     # Calculate similarity conditions
-                    c1, c2, c3, c4, c5, c6, c7, c8 = calculate_similarity_improved(
+                    c11, c12, c2, c3, c4, c5, c6, c7 = calculate_similarity_improved(
                         (
                             name_a,
                             first_a,
@@ -165,7 +165,7 @@ if __name__ == "__main__":
                     )
                     # Write results to csv
                     writer.writerow(
-                        [dev_a[0], email_a, dev_b[0], email_b, c1, c2, c3, c4, c5, c6, c7, c8]
+                        [dev_a[0], email_a, dev_b[0], email_b, c11, c12, c2, c3, c4, c5, c6, c7]
                     )
 
     # Read dataframe from csv
@@ -200,21 +200,21 @@ if __name__ == "__main__":
             ]
         ]
     elif heuristic == "improved":
-        df["c1_check"] = (df["c1"] >= threshold) & (df["c2"] >= threshold)
+        df["c1_check"] = (df["c11"] >= threshold) & (df["c12"] >= threshold)
+        df["c2_check"] = df["c2"] >= threshold
         df["c3_check"] = df["c3"] >= threshold
         df["c4_check"] = df["c4"] >= threshold
         df["c5_check"] = df["c5"] >= threshold
         df["c6_check"] = df["c6"] >= threshold
         df["c7_check"] = df["c7"] >= threshold
-        df["c8_check"] = df["c8"] >= threshold
         
         # Keep only rows where at least one condition is True
         df = df[
-            df[["c1_check", "c3_check", "c4_check", "c5_check", "c6_check", "c7_check", "c8_check"]].any(axis=1)
+            df[["c1_check", "c2_check", "c3_check", "c4_check", "c5_check", "c6_check", "c7_check"]].any(axis=1)
         ]
         
         # Omit "check" columns, save to csv
-        df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8"]]
+        df = df[["name_1", "email_1", "name_2", "email_2", "c11", "c12", "c2", "c3", "c4", "c5", "c6", "c7"]]
         
     # Added a print to see how many duplicates are found
     print(f"{len(df)} duplicates found")
