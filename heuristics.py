@@ -1,5 +1,10 @@
 from Levenshtein import ratio as sim
-
+import pandas as pd
+import numpy as np
+from rapidfuzz import fuzz
+import itertools
+import networkx as nx
+import utils
 
 def calculate_similarity_bird(dev_a, dev_b):
     name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = dev_a
@@ -23,18 +28,19 @@ def calculate_similarity_bird(dev_a, dev_b):
         c7 = i_last_b in prefix_a and first_b in prefix_a
     return c1, c2, c31, c32, c4, c5, c6, c7
 
-
 def calculate_similarity_improved(dev_a, dev_b):
     name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = dev_a
     name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = dev_b
 
-    email_postfix_a = email_a.split("@")[1] if "@" in email_a else email_a
-    email_postfix_b = email_b.split("@")[1] if "@" in email_b else email_b
-
-    # Conditions of edited heuristic
-    c1 = sim(name_a, name_b)
-    c2 = sim(prefix_a, prefix_b) * sim(email_postfix_a, email_postfix_b)
-    c31 = sim(first_a, first_b)
-    c32 = sim(last_a, last_b)
-
-    return c1, c2, c31, c32
+    # Conditions of improved heuristic
+    c1 = utils.name_similarity(first_a, first_b)    # First name similarity
+    c2 = utils.name_similarity(last_a, last_b)  # Last name similarity
+    c3 = utils.name_similarity(name_a, name_b)  # Full name similarity
+    c4 = utils.email_similarity(email_a, email_b)  # Email similarity
+    c5 = utils.prefix_match(prefix_b, i_first_a, last_a) if i_first_a and last_a else 0.0
+    c6 = utils.prefix_match(prefix_b, i_last_a, first_a) if i_last_a else 0.0
+    c7 = utils.prefix_match(prefix_a, i_first_b, last_b) if i_first_b and last_b else 0.0
+    c8 = utils.prefix_match(prefix_a, i_last_b, first_b) if i_last_b else 0.0
+    
+    return c1, c2, c3, c4, c5, c6, c7, c8
+    

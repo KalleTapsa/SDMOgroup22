@@ -5,7 +5,7 @@ from tqdm import tqdm
 import config
 from itertools import combinations
 from heuristics import calculate_similarity_bird, calculate_similarity_improved
-from preprocess import preprocess
+from utils import preprocess
 import pandas as pd
 import argparse
 
@@ -51,20 +51,37 @@ if __name__ == "__main__":
         # First element is header, skip
         DEVS = DEVS[1:]
 
-        cols = [
-            "name_1",
-            "email_1",
-            "name_2",
-            "email_2",
-            "c1",
-            "c2",
-            "c3.1",
-            "c3.2",
-            "c4",
-            "c5",
-            "c6",
-            "c7",
-        ]
+        cols = []
+        if heuristic == "bird":
+            cols = [
+                "name_1",
+                "email_1",
+                "name_2",
+                "email_2",
+                "c1",
+                "c2",
+                "c3.1",
+                "c3.2",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+            ]
+        elif heuristic == "improved":
+            cols = [
+                "name_1",
+                "email_1",
+                "name_2",
+                "email_2",
+                "c1",
+                "c2",
+                "c3",
+                "c4",
+                "c5",
+                "c6",
+                "c7",
+                "c8",
+            ]
 
         # Total combinations for tqdm
         total_combinations = len(DEVS) * (len(DEVS) - 1) // 2
@@ -126,7 +143,7 @@ if __name__ == "__main__":
                     )
                 elif heuristic == "improved":
                     # Calculate similarity conditions
-                    c1, c2, c31, c32 = calculate_similarity_improved(
+                    c1, c2, c3, c4, c5, c6, c7, c8 = calculate_similarity_improved(
                         (
                             name_a,
                             first_a,
@@ -148,7 +165,7 @@ if __name__ == "__main__":
                     )
                     # Write results to csv
                     writer.writerow(
-                        [dev_a[0], email_a, dev_b[0], email_b, c1, c2, c31, c32]
+                        [dev_a[0], email_a, dev_b[0], email_b, c1, c2, c3, c4, c5, c6, c7, c8]
                     )
 
     # Read dataframe from csv
@@ -183,15 +200,21 @@ if __name__ == "__main__":
             ]
         ]
     elif heuristic == "improved":
-        df["c_sum"] = (
-            (df["c1"] >= threshold).astype(int)
-            + (df["c2"] >= threshold).astype(int)
-            + ((df["c3.1"] >= threshold) & (df["c3.2"] >= threshold)).astype(int)
-        )
-        # Rows that have two parts over threshold are kept
-        df = df[df["c_sum"] >= 2]
+        df["c1_check"] = (df["c1"] >= threshold) & (df["c2"] >= threshold)
+        df["c3_check"] = df["c3"] >= threshold
+        df["c4_check"] = df["c4"] >= threshold
+        df["c5_check"] = df["c5"] >= threshold
+        df["c6_check"] = df["c6"] >= threshold
+        df["c7_check"] = df["c7"] >= threshold
+        df["c8_check"] = df["c8"] >= threshold
+        
+        # Keep only rows where at least one condition is True
+        df = df[
+            df[["c1_check", "c3_check", "c4_check", "c5_check", "c6_check", "c7_check", "c8_check"]].any(axis=1)
+        ]
+        
         # Omit "check" columns, save to csv
-        df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2", "c3.1", "c3.2"]]
+        df = df[["name_1", "email_1", "name_2", "email_2", "c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8"]]
         
     # Added a print to see how many duplicates are found
     print(f"{len(df)} duplicates found")
