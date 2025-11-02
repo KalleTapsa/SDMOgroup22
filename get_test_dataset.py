@@ -31,9 +31,9 @@ if __name__ == "__main__":
     argparser.add_argument(
         "--num_pairs",
         type=int,
-        default=500,
+        default=1000,
         required=False,
-        help="Number of developer pairs to output (default: 500)",
+        help="Number of developer pairs to output (default: 1000)",
     )
     
     args = argparser.parse_args()
