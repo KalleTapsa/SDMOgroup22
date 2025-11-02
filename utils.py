@@ -120,8 +120,8 @@ def is_potential_duplicate(dev_a, dev_b):
     Returns:
         bool: True if potential duplicates, False otherwise
     """
-    name_a, _, _, _, _, email_a, prefix_a = preprocess(dev_a)
-    name_b, _, _, _, _, email_b, prefix_b = preprocess(dev_b)
+    name_a, _, _, _, _, _, prefix_a = preprocess(dev_a)
+    name_b, _, _, _, _, _, prefix_b = preprocess(dev_b)
     
     name_similarity = fuzz.token_sort_ratio(name_a, name_b) / 100.0
     email_similarity = fuzz.token_sort_ratio(prefix_a, prefix_b) / 100.0

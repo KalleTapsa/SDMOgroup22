@@ -21,7 +21,8 @@ def biased_sample(pairs, n_samples):
     probs /= probs.sum()  # Normalize to sum to 1 for np.random.choice
 
     # Randomly sample indices with the probabilities
-    chosen_idx = np.random.choice(len(pairs), size=n_samples, replace=False, p=probs)
+    # chosen_idx = np.random.choice(len(pairs), size=n_samples, replace=False, p=probs)
+    chosen_idx = np.random.Generator().choice(len(pairs), size=n_samples, replace=False, p=probs)
     return [pairs[i] for i in chosen_idx]
 
 if __name__ == "__main__":

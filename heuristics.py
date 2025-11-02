@@ -2,8 +2,8 @@ from Levenshtein import ratio as sim
 import utils
 
 def calculate_similarity_bird(dev_a, dev_b):
-    name_a, first_a, last_a, i_first_a, i_last_a, email_a, prefix_a = dev_a
-    name_b, first_b, last_b, i_first_b, i_last_b, email_b, prefix_b = dev_b
+    name_a, first_a, last_a, i_first_a, i_last_a, _, prefix_a = dev_a
+    name_b, first_b, last_b, i_first_b, i_last_b, _, prefix_b = dev_b
     
     # Conditions of Bird heuristic
     c1 = sim(name_a, name_b)

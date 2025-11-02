@@ -5,3 +5,5 @@ project1devs/*
 .sonar/.sonar_lock
 .sonar/report-task.txt
 sonar-project.properties
+config.py
+
