@@ -1,39 +1,15 @@
 # 811372A-3007 Software Development, Maintenance and Operations 2025 Projects
 
-This repository contains example data and scripts showcasing data collection and processing
-for projects of the Software Development, Maintenance and Operations.
+This is an implementation on the example project 1, where the goal is to identify duplicate developers in a list of commiters from an open Github repository.
 
-The three projects are:
+Here are instructions on how to analyze duplicate developers from an open Github repository.
 
-- Project 1: Developer de-duplication
-- Project 2: Temporal centrality and monitoring metrics
-- Project 3: Temporal state detection and anomaly detection
-
-## Contents
-
-- `project1devs/`: Directory with data for Project 1
-  - `devs.csv`: List of developers mined from eShopOnContainersProject
-  - `devs_similarity.csv`: Similarity tests for each pair of developers
-  - `devs_similarity_t=0.7.csv`: Similarity tests for each pair of developers with similarity threshold 0.7
-- `project1developers.py`: Script demonstrating mining developer information and Bird heuristic to determine duplicate developers
-- `project2&3traces/`: Directory with data for Projects 2 & 3
-  - `train-ticket-traces.csv`: CSV file with traces for train-ticket system from an open dataset
-  - `project2edgeflow.csv`: CSV file providing a list of real-time service calls for Project 2
-  - `project3anomaly.csv`: CSV file providing snapshot networks for service calls grouped by intervals for Project 3
-  - `project2_katz_exponential.csv`: CSV file with Temporal Katz Centrality with exponential decay
-  - `project2_katz_constant.csv`: CSV file with Temporal Katz Centrality with constant decay
-  - `project2_katz_truncated.csv`: CSV file with Temporal Katz Centrality with truncated exponential decay
-- `project2&3data.py`: Script processing raw traces into formats required by Projects 2&3
-- `project2centrality.py`: Script demonstrating temporal katz centrality on temporal edge flow network of microservice calls for Project 2
-- `project3anomaly.py`: Script demonstrating temporal state detection on temporal networks of microservice calls for Project 3
-- `requirements.txt`: List of used libraries with specified versions
+1. Edit your details to `config.py`. Use your wanted Github repository in the `REPO_PATH` -variable, and put your name in the `TEAM_MEMBER`-variable.
+2. Run the `fetch_devs.py`-script. If you want to limit the amount of commits that are fetched (i.e. get less developers to `devs.csv`), you can run `fetch_devs.py --limit <your-limit-here>`.
+3. After you run the `fetch_devs.py`-script, check that a folder named `project1devs/<your-name-here>` is created and there is a file named `devs.csv`.
+4. Run the following script `main.py --heuristic <your-choice-here> --threshold <your-choice-here>`. This script lists the duplicate developers to a csv-file in the folder named `project1devs/<your-name-here>`. You can choose between the Bird et al. heuristic and the improved version by using either `bird` or `improved` -flag when running the script. You can also choose your threshold `t` by choosing (0.7 for example) `--threshold 0.7`.
 
 
-## Running the scripts
+After doing the steps above you should have a file `devs_similarity_t=<selected-threshold>` in your `project1devs/<your-name-here>` -folder. 
 
-The scripts were developed and tested on a Mac (UNIX) environment with Python 3.10.
-There should be no compatibility issues with running the scripts on Windows.
 
-The versions of imported libraries are provided in `requirements.txt`.
-
-It is recommended to create a Python virtual environment and install the exact versions there.
